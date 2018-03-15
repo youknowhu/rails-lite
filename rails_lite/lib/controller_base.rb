@@ -27,6 +27,7 @@ class ControllerBase
       @res.header['location'] = url
       @res.status = 302
       @already_built_response = true
+      @session.store_session(@res)
     end
   end
 
@@ -40,6 +41,7 @@ class ControllerBase
       @res.body = [content]
       @res['Content-Type'] = content_type
       @already_built_response = true
+      @session.store_session(@res)
     end
   end
 
@@ -51,15 +53,15 @@ class ControllerBase
     else
       controller_name =  self.class.to_s.underscore
       path = "views/#{controller_name}/#{template_name}.html.erb"
-      erb_file = ERB.new(File.read(path)).result(binding)
-      render_content(erb_file, 'text/html')
+      rendered_content = ERB.new(File.read(path)).result(binding)
+      render_content(rendered_content, 'text/html')
       @already_built_response = true
     end
   end
 
   # method exposing a `Session` object
   def session
-    
+    @session ||= Session.new(@req)
   end
 
   # use this with the router to call action_name (:index, :show, :create...)
